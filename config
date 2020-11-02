@@ -132,7 +132,7 @@ mode "move" {
                         $win+t          mode "move_to"
                         $win+s          mode "move_workspace"
                         $win+f          mode "default"; floating toggle
-                        $win+w          mode "default"; fullscreen toggle
+                        $win+m          mode "default"; fullscreen toggle
                         $win+h          mode "default"; move left
                         $win+j          mode "default"; move down
                         $win+k          mode "default"; move up
