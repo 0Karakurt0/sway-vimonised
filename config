@@ -1,0 +1,254 @@
+#========= Variables =========
+set {
+    $win Mod4
+    $alt Mod1
+    $ws1 "1"
+    $ws2 "2"
+    $ws3 "3"
+    $ws4 "4"
+    $ws5 "5"
+    $ws6 "6"
+    $ws7 "7"
+    $ws8 "8"
+    $ws9 "9"
+    $ws0 "0"
+    $locker             swaylock -i ~/.config/sway/bg.png
+    $term               kitty
+    $menu               dmenu -i -l 10
+    $notify-daemon      mako
+    $notify-bar         /tmp/sway/wobpipe
+    $notify-bar-program wob -a bottom
+    $last_action        /tmp/sway/last_action
+    $filemanager        kitty -e ranger
+    $browser            qutebrowser
+    $launcher           dmenu_run
+    $bar                "killall waybar ; waybar"
+}
+#============================
+
+#======== Autostart =========
+exec                        nm-applet
+exec                        kotatogram-desktop
+exec                        $browser
+exec_always --no-startup-id $notify-daemon
+exec_always --no-startup-id $bar
+exec_always --no-startup-id mkdir /tmp/sway; touch $last_action
+exec_always --no-startup-id ~/.config/sway/sway-last_action.sh --start $last_action
+exec_always --no-startup-id mkfifo $notify-bar && tail -f $notify-bar | $notify-bar-program
+#============================
+
+ #========== Rules ===========
+default_border pixel 3
+for_window [title="dialog"] mode floating
+for_window [app_id=mpv] mode floating
+for_window [window_role="pop-up"] floating enable
+for_window [window_role="task_dialog"] floating enable
+assign [app_id="appimagekit_d2192f48ebc43a9db26e1dfa2bc5097b-Kotatogram_Desktop"] $ws4
+assign [app_id="org.qutebrowser.qutebrowser"] $ws2
+floating_modifier $win
+gaps inner 5
+smart_gaps true
+input * xkb_numlock enable
+seat seat0 xcursor_theme volantes_cursors
+#============================
+
+#========== Setup ===========
+input "1:1:AT_Translated_Set_2_keyboard" {
+    xkb_layout us,ru
+    xkb_options grp:caps_toggle,caps:shifted_capslock,terminate:ctrl_alt_bksp
+}
+input "2:7:SynPS/2_Synaptics_TouchPad" {
+    tap enabled
+}
+#============================
+
+#====== Starting keys ========
+bindsym --to-code {
+                    $win+d             mode "delete"
+                    $win+m             mode "move"
+                    $win+g             mode "go"
+                    $win+r             exec sway-input -F 'exec ~/.config/sway/sway-resizer.sh %s'
+                    $win+l             mode "launch"
+                    $win+s             mode "system"
+                    $win+period        exec swaymsg $(~/.config/sway/sway-last_action.sh --get $last_action)
+                    $win+Shift+m       exec sway-input -F 'mark %s' -l 1 -P 'Mark: '
+                    $win+Shift+g       mode "default"; workspace $ws0
+                    $win+Return        exec $term
+                    $win+Left          focus left
+                    $win+Down          focus down
+                    $win+Up            focus up
+                    $win+Right         focus right
+                    $win+q             exit
+}
+#=============================
+
+#======= System keys ========
+# Use pactl to adjust volume in PulseAudio.
+bindsym --to-code XF86AudioRaiseVolume exec pamixer -ui 5 && pamixer --get-volume > $notify-bar
+bindsym --to-code XF86AudioLowerVolume exec pamixer -ud 5 && pamixer --get-volume > $notify-bar
+bindsym --to-code XF86AudioMute exec pamixer --toggle-mute && ( pamixer --get-mute && echo 0 > $notify-bar ) || pamixer --get-volume > $notify-bar
+# Controlling brightness
+bindsym --to-code XF86MonBrightnessUp exec light -A 5 && light -G | cut -d'.' -f1 > $notify-bar
+bindsym --to-code XF86MonBrightnessDown exec light -U 5 && light -G | cut -d'.' -f1 > $notify-bar
+#============================
+
+#======= Main modes ==========
+mode "delete" {
+    # repeating
+    bindsym --to-code { 
+                        $win+1         exec ~/.config/sway/sway_repeater.sh 1
+                        $win+2         exec ~/.config/sway/sway_repeater.sh 2
+                        $win+3         exec ~/.config/sway/sway_repeater.sh 3
+                        $win+4         exec ~/.config/sway/sway_repeater.sh 4
+                        $win+5         exec ~/.config/sway/sway_repeater.sh 5
+                        $win+6         exec ~/.config/sway/sway_repeater.sh 6
+                        $win+7         exec ~/.config/sway/sway_repeater.sh 7
+                        $win+8         exec ~/.config/sway/sway_repeater.sh 8
+                        $win+9         exec ~/.config/sway/sway_repeater.sh 9
+    # Keys
+                        $win+w         mode "default"; kill
+                        $win+d         mode "default"; kill
+                        $win+p         mode "default"; focus parent,kill
+                        $win+a         mode "default"; [workspace=$ws1] kill
+                        $win+n         mode "default"; exec makoctl dismiss
+                        $win+Shift+n   mode "default"; exec makoctl dismiss --all
+                        Escape         mode "default"
+    }
+}
+
+mode "move" {
+    # Repeating
+    bindsym --to-code {
+                        $win+1 exec ~/.config/sway/sway_repeater.sh 1
+                        $win+2 exec ~/.config/sway/sway_repeater.sh 2
+                        $win+3 exec ~/.config/sway/sway_repeater.sh 3
+                        $win+4 exec ~/.config/sway/sway_repeater.sh 4
+                        $win+5 exec ~/.config/sway/sway_repeater.sh 5
+                        $win+6 exec ~/.config/sway/sway_repeater.sh 6
+                        $win+7 exec ~/.config/sway/sway_repeater.sh 7
+                        $win+8 exec ~/.config/sway/sway_repeater.sh 8
+                        $win+9 exec ~/.config/sway/sway_repeater.sh 9
+    # Keys
+                        $win+t          mode "move_to"
+                        $win+s          mode "move_workspace"
+                        $win+f          mode "default"; floating toggle
+                        $win+w          mode "default"; fullscreen toggle
+                        $win+h          mode "default"; move left
+                        $win+j          mode "default"; move down
+                        $win+k          mode "default"; move up
+                        $win+l          mode "default"; move right
+                        Escape          mode "default"
+    }
+}
+
+mode "go" {
+    # Repeating
+    bindsym --to-code {
+                        $win+1 exec ~/.config/sway/sway_repeater.sh 1
+                        $win+2 exec ~/.config/sway/sway_repeater.sh 2
+                        $win+3 exec ~/.config/sway/sway_repeater.sh 3
+                        $win+4 exec ~/.config/sway/sway_repeater.sh 4
+                        $win+5 exec ~/.config/sway/sway_repeater.sh 5
+                        $win+6 exec ~/.config/sway/sway_repeater.sh 6
+                        $win+7 exec ~/.config/sway/sway_repeater.sh 7
+                        $win+8 exec ~/.config/sway/sway_repeater.sh 8
+                        $win+9 exec ~/.config/sway/sway_repeater.sh 9
+    # Keys
+                        $win+s         mode "go_workspace"
+                        $win+g         mode "default"; workspace $ws1
+                        $win+m         mode "default"; exec sway-input -F '[con_mark="%s"] focus' -l 1 -P 'Mark: '
+                        $win+p         mode "default"; focus prev
+                        $win+n         mode "default"; focus next
+                        $win+f         mode "default"; focus mode_toggle
+                        $win+h         mode "default"; focus left
+                        $win+j         mode "default"; focus down
+                        $win+k         mode "default"; focus up
+                        $win+l         mode "default"; focus right
+    # Same with arrows
+                        $win+Left      mode "default"; focus left
+                        $win+Down      mode "default"; focus down
+                        $win+Up        mode "default"; focus up
+                        $win+Right     mode "default"; focus right
+                        Escape         mode "default"
+    }
+}
+
+mode "launch" {
+    # Repeating
+    bindsym --to-code {
+                        $win+1 exec ~/.config/sway/sway_repeater.sh 1
+                        $win+2 exec ~/.config/sway/sway_repeater.sh 2
+                        $win+3 exec ~/.config/sway/sway_repeater.sh 3
+                        $win+4 exec ~/.config/sway/sway_repeater.sh 4
+                        $win+5 exec ~/.config/sway/sway_repeater.sh 5
+                        $win+6 exec ~/.config/sway/sway_repeater.sh 6
+                        $win+7 exec ~/.config/sway/sway_repeater.sh 7
+                        $win+8 exec ~/.config/sway/sway_repeater.sh 8
+                        $win+9 exec ~/.config/sway/sway_repeater.sh 9
+    # Programs to launch
+                        $win+t         mode "default"; exec $term
+                        $win+f         mode "default"; exec $filemanager
+                        $win+b         mode "default"; exec $browser
+                        $win+l         mode "default"; exec $launcher
+                        Escape         mode "default"
+    }
+}
+
+mode "system" {
+    # Repeating
+    bindsym --to-code {
+                        $win+1 exec ~/.config/sway/sway_repeater.sh 1
+                        $win+2 exec ~/.config/sway/sway_repeater.sh 2
+                        $win+3 exec ~/.config/sway/sway_repeater.sh 3
+                        $win+4 exec ~/.config/sway/sway_repeater.sh 4
+                        $win+5 exec ~/.config/sway/sway_repeater.sh 5
+                        $win+6 exec ~/.config/sway/sway_repeater.sh 6
+                        $win+7 exec ~/.config/sway/sway_repeater.sh 7
+                        $win+8 exec ~/.config/sway/sway_repeater.sh 8
+                        $win+9 exec ~/.config/sway/sway_repeater.sh 9
+    # Keys
+                        $win+s         mode "default"; split toggle
+                        $win+m         mode "default"; exec dunstctl context
+                        $win+r         mode "default"; reload
+                        $win+l         mode "default"; layout toggle all
+                        Escape         mode "default"
+    }
+}
+#=============================
+
+
+#=============================
+
+mode "go_workspace" {
+    bindsym --to-code {
+                        $win+1         mode "default"; workspace $ws1
+                        $win+2         mode "default"; workspace $ws2
+                        $win+3         mode "default"; workspace $ws3
+                        $win+4         mode "default"; workspace $ws4
+                        $win+5         mode "default"; workspace $ws5
+                        $win+6         mode "default"; workspace $ws6
+                        $win+7         mode "default"; workspace $ws7
+                        $win+8         mode "default"; workspace $ws8
+                        $win+9         mode "default"; workspace $ws9
+                        $win+0         mode "default"; workspace $ws0
+                        Escape         mode "default"
+    }
+}
+
+mode "move_workspace" {
+    bindsym --to-code {
+                        $win+1         mode "default"; move container to workspace $ws1
+                        $win+2         mode "default"; move container to workspace $ws2
+                        $win+3         mode "default"; move container to workspace $ws3
+                        $win+4         mode "default"; move container to workspace $ws4
+                        $win+5         mode "default"; move container to workspace $ws5
+                        $win+6         mode "default"; move container to workspace $ws6
+                        $win+7         mode "default"; move container to workspace $ws7
+                        $win+8         mode "default"; move container to workspace $ws8
+                        $win+9         mode "default"; move container to workspace $ws9
+                        $win+0         mode "default"; move container to workspace $ws0
+                        Escape         mode "default"
+    }
+}
+
+#=============================
