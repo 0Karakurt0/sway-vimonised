@@ -16,9 +16,10 @@ set {
     $term               kitty
     $menu               dmenu -i -l 10
     $notify-daemon      mako
-    $notify-bar         /tmp/sway/wobpipe
-    $notify-bar-program wob -a bottom
+    $notify-bar         wob -a bottom
+    $notify-bar-pipe    /tmp/sway/wobpipe
     $last_action        /tmp/sway/last_action
+    $resz_num           /tmp/sway/resz_num
     $filemanager        kitty -e ranger
     $browser            qutebrowser
     $launcher           dmenu_run
@@ -32,9 +33,9 @@ exec                        kotatogram-desktop
 exec                        $browser
 exec_always --no-startup-id $notify-daemon
 exec_always --no-startup-id $bar
-exec_always --no-startup-id mkdir /tmp/sway; touch $last_action
+exec_always --no-startup-id mkdir /tmp/sway; touch $last_action $resz_num
 exec_always --no-startup-id ~/.config/sway/sway-last_action.sh --start $last_action
-exec_always --no-startup-id mkfifo $notify-bar && tail -f $notify-bar | $notify-bar-program
+exec_always --no-startup-id mkfifo $notify-bar-pipe && tail -f $notify-bar-pipe | $notify-bar
 #============================
 
  #========== Rules ===========
@@ -55,7 +56,7 @@ seat seat0 xcursor_theme volantes_cursors
 #========== Setup ===========
 input "1:1:AT_Translated_Set_2_keyboard" {
     xkb_layout us,ru
-    xkb_options grp:caps_toggle,caps:shifted_capslock,terminate:ctrl_alt_bksp
+    xkb_options terminate:ctrl_alt_bksp
 }
 input "2:7:SynPS/2_Synaptics_TouchPad" {
     tap enabled
@@ -67,7 +68,7 @@ bindsym --to-code {
                     $win+d             mode "delete"
                     $win+m             mode "move"
                     $win+g             mode "go"
-                    $win+r             exec sway-input -F 'exec ~/.config/sway/sway-resizer.sh %s'
+                    $win+r             mode "resize" ; exec ~/.config/sway/sway-resizer.sh clear $resz_num
                     $win+l             mode "launch"
                     $win+s             mode "system"
                     $win+period        exec swaymsg $(~/.config/sway/sway-last_action.sh --get $last_action)
@@ -80,13 +81,15 @@ bindsym --to-code {
                     $win+Right         focus right
                     $win+q             exit
 }
+bindsym ISO_Next_Group xkb_switch_layout 0
+bindsym Shift+ISO_Next_Group xkb_switch_layout 1
 #=============================
 
 #======= System keys ========
 # Use pactl to adjust volume in PulseAudio.
 bindsym --to-code XF86AudioRaiseVolume exec pamixer -ui 5 && pamixer --get-volume > $notify-bar
 bindsym --to-code XF86AudioLowerVolume exec pamixer -ud 5 && pamixer --get-volume > $notify-bar
-bindsym --to-code XF86AudioMute exec pamixer --toggle-mute && ( pamixer --get-mute && echo 0 > $notify-bar ) || pamixer --get-volume > $notify-bar
+bindsym --to-code XF86AudioMute exec pamixer --toggle-mute && ( pamixer --get-mute && echo 0 > $notify-bar-pipe ) || pamixer --get-volume > $notify-bar
 # Controlling brightness
 bindsym --to-code XF86MonBrightnessUp exec light -A 5 && light -G | cut -d'.' -f1 > $notify-bar
 bindsym --to-code XF86MonBrightnessDown exec light -U 5 && light -G | cut -d'.' -f1 > $notify-bar
@@ -211,6 +214,33 @@ mode "system" {
                         $win+m         mode "default"; exec dunstctl context
                         $win+r         mode "default"; reload
                         $win+l         mode "default"; layout toggle all
+                        Escape         mode "default"
+    }
+}
+
+mode "resize" {
+    # Repeating
+    bindsym --to-code {
+                        $win+1 exec ~/.config/sway/sway-resizer.sh 1 $resz_num
+                        $win+2 exec ~/.config/sway/sway-resizer.sh 2 $resz_num
+                        $win+3 exec ~/.config/sway/sway-resizer.sh 3 $resz_num
+                        $win+4 exec ~/.config/sway/sway-resizer.sh 4 $resz_num
+                        $win+5 exec ~/.config/sway/sway-resizer.sh 5 $resz_num
+                        $win+6 exec ~/.config/sway/sway-resizer.sh 6 $resz_num
+                        $win+7 exec ~/.config/sway/sway-resizer.sh 7 $resz_num
+                        $win+8 exec ~/.config/sway/sway-resizer.sh 8 $resz_num
+                        $win+9 exec ~/.config/sway/sway-resizer.sh 9 $resz_num
+                        $win+0 exec ~/.config/sway/sway-resizer.sh 0 $resz_num
+    # Keys
+                        $win+h         mode "default"; exec ~/.config/sway/sway-resizer.sh left $resz_num
+                        $win+j         mode "default"; exec ~/.config/sway/sway-resizer.sh up $resz_num
+                        $win+k         mode "default"; exec ~/.config/sway/sway-resizer.sh down $resz_num
+                        $win+l         mode "default"; exec ~/.config/sway/sway-resizer.sh right $resz_num
+    # Same with arrows
+                        $win+Left      mode "default"; exec ~/.config/sway/sway-resizer.sh left $resz_num
+                        $win+Down      mode "default"; exec ~/.config/sway/sway-resizer.sh up $resz_num
+                        $win+Up        mode "default"; exec ~/.config/sway/sway-resizer.sh down $resz_num
+                        $win+Right     mode "default"; exec ~/.config/sway/sway-resizer.sh right $resz_num
                         Escape         mode "default"
     }
 }
